@@ -1,4 +1,5 @@
 import scrapy
+from ogloszenia_trojmiasto import items
 
 class OgloszeniaSpider(scrapy.Spider):
     name = "ogloszenia"
@@ -7,7 +8,6 @@ class OgloszeniaSpider(scrapy.Spider):
         "https://ogloszenia.trojmiasto.pl/nieruchomosci-rynek-wtorny/mieszkanie/",
         "https://ogloszenia.trojmiasto.pl/nieruchomosci-rynek-pierwotny/mieszkanie/"
     ]
-
 
     def parse(self, response):
         listings = response.css('div.list__item') # main class showing all listings
@@ -23,6 +23,8 @@ class OgloszeniaSpider(scrapy.Spider):
 
 
     def parse_subsite(self, response):
+        ogloszenie = items.OgloszenieItem()
+
         try:
             title = response.css("h1.xogIndex__title::text").get()
         except:
@@ -48,7 +50,7 @@ class OgloszeniaSpider(scrapy.Spider):
         except:
             price_per_sqr_meter = None
         try:
-            square_meters = response.css("span:contains('Powierzchnia') + span::text").get().strip()
+            square_meters = response.css("span:contains('Pow. nieruchomości') + span::text").get().strip()
         except:
             square_meters = None
         try:
@@ -56,15 +58,14 @@ class OgloszeniaSpider(scrapy.Spider):
         except:
             address = None
 
-        yield {
-            "url" : response.url,
-            "title" : title,
-            "price" : price,
-            "rooms" : rooms,
-            "floor" : floor,
-            "year" : year,
-            "price_per_sqr_meter" : price_per_sqr_meter,
-            "square_meters" : square_meters,
-            "address" : address,
-            ### more features?
-        }
+        ogloszenie["url"] = response.url,
+        ogloszenie["title"] = title,
+        ogloszenie["price"] = price,
+        ogloszenie["rooms"] = rooms,
+        ogloszenie["floor"] = floor,
+        ogloszenie["year"] = year,
+        ogloszenie["price_per_sqr_meter"] = price_per_sqr_meter,
+        ogloszenie["square_meters"] = square_meters,
+        ogloszenie["address"] = address,
+        
+        yield ogloszenie

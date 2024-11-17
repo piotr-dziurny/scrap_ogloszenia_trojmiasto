@@ -5,8 +5,20 @@
 
 import scrapy
 
-
 class OgloszeniaTrojmiastoItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
+
+class OgloszenieItem(scrapy.Item):
+    url = scrapy.Field()
+    title = scrapy.Field()
+    price = scrapy.Field()
+    rooms = scrapy.Field()
+    floor = scrapy.Field()
+    year = scrapy.Field()
+    price_per_sqr_meter = scrapy.Field()
+    square_meters = scrapy.Field()
+    address = scrapy.Field()
+    coastline_distance = scrapy.Field()
+    downtown_distance = scrapy.Field()
