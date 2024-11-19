@@ -4,6 +4,7 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+import unicodedata
 
 class OgloszeniaTrojmiastoItem(scrapy.Item):
     # define the fields for your item here like:
@@ -21,4 +22,6 @@ class OgloszenieItem(scrapy.Item):
     square_meters = scrapy.Field()
     address = scrapy.Field()
     coastline_distance = scrapy.Field()
-    downtown_distance = scrapy.Field()
+    gdynia_downtown_distance = scrapy.Field()
+    gdansk_downtown_distance = scrapy.Field() 
+    sopot_downtown_distance = scrapy.Field()

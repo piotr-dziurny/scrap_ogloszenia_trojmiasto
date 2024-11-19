@@ -63,7 +63,9 @@ DOWNLOAD_DELAY = 2
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "ogloszenia_trojmiasto.pipelines.OgloszeniaTrojmiastoPipeline": 300,
+   "ogloszenia_trojmiasto.pipelines.RemoveTuplePipeline": 100,
+   "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 200,
+   "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

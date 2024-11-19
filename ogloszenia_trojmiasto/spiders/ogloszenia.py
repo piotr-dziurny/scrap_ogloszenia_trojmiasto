@@ -1,5 +1,6 @@
 import scrapy
 from ogloszenia_trojmiasto import items
+import unicodedata
 
 class OgloszeniaSpider(scrapy.Spider):
     name = "ogloszenia"
