@@ -6,6 +6,8 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import os
+from datetime import datetime
 
 BOT_NAME = "ogloszenia_trojmiasto"
 
@@ -63,9 +65,9 @@ DOWNLOAD_DELAY = 2
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "ogloszenia_trojmiasto.pipelines.RemoveTuplePipeline": 100,
-   "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 200,
-   "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 300
+   "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
+   "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 200,
+   "ogloszenia_trojmiasto.pipelines.DatabasePipeline": 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -93,3 +95,9 @@ ITEM_PIPELINES = {
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8-sig"
+
+
+os.makedirs("logs", exist_ok=True)
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+LOG_FILE = os.path.join("logs", f"spider_{timestamp}.log")
+#LOG_LEVEL = "INFO"

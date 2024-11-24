@@ -5,7 +5,6 @@ import geopandas as gpd
 from geographiclib.geodesic import Geodesic
 import os
 
-
 class GeoDistance:
     @staticmethod
     def get_coordinates(address: str) -> tuple:

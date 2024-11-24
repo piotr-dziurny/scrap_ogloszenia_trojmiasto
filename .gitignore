@@ -2,3 +2,9 @@ results.csv
 test.ipynb
 result_1611.csv
 todo.md
+venv/
+.env
+libs.txt
+ca.pem
+result_2411.csv
+logs/

@@ -1,5 +1,8 @@
 import scrapy
 from ogloszenia_trojmiasto import items
+from ogloszenia_trojmiasto.db_helper import DatabaseHelper
+import os
+import logging
 import unicodedata
 
 class OgloszeniaSpider(scrapy.Spider):
@@ -9,13 +12,24 @@ class OgloszeniaSpider(scrapy.Spider):
         "https://ogloszenia.trojmiasto.pl/nieruchomosci-rynek-wtorny/mieszkanie/",
         "https://ogloszenia.trojmiasto.pl/nieruchomosci-rynek-pierwotny/mieszkanie/"
     ]
-
+    
+    def __init__(self):
+        super().__init__()
+        self.db_helper = DatabaseHelper()
+        self.existing_urls = set(self.db_helper.get_existing_urls())
+        self.logger.info(f"Fetched {len(self.existing_urls)} urls from the database")
+        
     def parse(self, response):
         listings = response.css('div.list__item') # main class showing all listings
         for listing in listings:
             relative_url = listing.css("h2.list__item__content__title a::attr(href)").get() # current site
             listing_url = response.urljoin(relative_url)
-            yield response.follow(listing_url, callback = self.parse_subsite) # entering subsite
+
+            if listing_url in self.existing_urls: # check if listing is in already in db
+                self.logger.info(f"skipping {listing_url}")
+                continue
+
+            yield response.follow(listing_url, callback = self.parse_subsite) # enter subsite
 
         next_page = response.css("div.pages__controls.pages__controls--right a::attr(href)").get()
         if next_page is not None:
@@ -26,47 +40,29 @@ class OgloszeniaSpider(scrapy.Spider):
     def parse_subsite(self, response):
         ogloszenie = items.OgloszenieItem()
 
-        try:
-            title = response.css("h1.xogIndex__title::text").get()
-        except:
-            title = None
-        try:
-            price = response.css(".xogParams p::text").get()[:-2].strip()
-        except:
-            price = None
-        try:
-            rooms = response.css("span:contains('Liczba pokoi') + span::text").get().strip()
-        except:
-            rooms = None
-        try:
-            floor = response.css("span:contains('Piętro') + span::text").get().strip()
-        except:
-            floor = None
-        try:
-            year = response.css("span:contains('Rok budowy') + span::text").get().strip()
-        except:
-            year = None
-        try:
-            price_per_sqr_meter = response.css("span:contains('Cena za m') + span::text").get().strip()
-        except:
-            price_per_sqr_meter = None
-        try:
-            square_meters = response.css("span:contains('Pow. nieruchomości') + span::text").get().strip()
-        except:
-            square_meters = None
-        try:
-            address = response.css("i.trm.trm-location + span::text").getall()
-        except:
-            address = None
+        fields = {
+            "title": "h1.xogIndex__title::text",
+            "price": ".xogParams p::text",
+            "rooms": "span:contains('Liczba pokoi') + span::text",
+            "floor": "span:contains('Piętro') + span::text",
+            "year": "span:contains('Rok budowy') + span::text",
+            "price_per_sqr_meter": "span:contains('Cena za m') + span::text",
+            "square_meters": "span:contains('Pow. nieruchomości') + span::text",
+            "address": "i.trm.trm-location + span::text",
+        }
 
-        ogloszenie["url"] = response.url,
-        ogloszenie["title"] = title,
-        ogloszenie["price"] = price,
-        ogloszenie["rooms"] = rooms,
-        ogloszenie["floor"] = floor,
-        ogloszenie["year"] = year,
-        ogloszenie["price_per_sqr_meter"] = price_per_sqr_meter,
-        ogloszenie["square_meters"] = square_meters,
-        ogloszenie["address"] = address,
-        
+        for field, selector in fields.items():
+            try:
+                if field == "address":
+                    value = response.css(selector).getall() # use getalL() because address is split across multiple elements
+                    ogloszenie[field] = value
+                else:
+                    value = response.css(selector).get()
+                    ogloszenie[field] = value.strip() if value else None # strip result for readbility
+            except Exception as e:
+                self.logger.error(f"Error extracting {field}: {e}")
+                ogloszenie[field] = None
+
+        ogloszenie["url"] = response.url
+
         yield ogloszenie

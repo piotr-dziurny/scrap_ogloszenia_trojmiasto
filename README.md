@@ -14,6 +14,16 @@ The scraped data consists of apartments from the "rynek pierwotny" and "rynek wt
 - **square meters**: total area of the apartment in square meters
 - **address**: address of the apartment
 
+---
+
+### Synthetic Features
+In addition to the scraped data, the scraper calculates the following synthetic features:
+
+- **coastline_distance**: distance from the apartment to the nearest point on the coastline
+- **gdynia_downtown_distance**: distance from the apartment to the downtown of Gdynia
+- **gdansk_downtown_distance**: distance from the apartment to the downtown of Gdańsk
+- **sopot_downtown_distance**: distance from the apartment to the downtown of Sopot
+
 
 ### Sources
 * https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
