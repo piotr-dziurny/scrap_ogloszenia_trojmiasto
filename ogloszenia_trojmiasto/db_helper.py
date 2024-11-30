@@ -69,7 +69,7 @@ class DatabaseHelper:
     def insert_item(self, item):
         """
 
-        insert new item into the database. If the url exists - update the record
+        insert new item into the database. If listing's url is in database -> skip
 
         """
 
@@ -77,23 +77,12 @@ class DatabaseHelper:
         INSERT IGNORE INTO scraped_items (url, title, price, price_per_sqr_meter, rooms, floor, square_meters, year, address,
         coastline_distance, gdynia_downtown_distance, gdansk_downtown_distance, sopot_downtown_distance)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            title = VALUES(title),
-            price = VALUES(price),
-            price_per_sqr_meter = VALUES(price_per_sqr_meter),
-            rooms = VALUES(rooms),
-            floor = VALUES(floor),
-            square_meters = VALUES(square_meters),
-            year = VALUES(year),
-            address = VALUES(address),
-            coastline_distance = VALUES(coastline_distance),
-            gdynia_downtown_distance = VALUES(gdynia_downtown_distance),
-            gdansk_downtown_distance = VALUES(gdansk_downtown_distance),
-            sopot_downtown_distance = VALUES(sopot_downtown_distance)
 
         """
         try:
             self.cursor.execute(query, (
-                item["url"], item["title"],
+                item["title"],
+                item["url"],
                 item["price"],
                 item["price_per_sqr_meter"],
                 item["rooms"],
