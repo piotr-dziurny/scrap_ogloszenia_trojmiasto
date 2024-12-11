@@ -14,7 +14,7 @@ class DatabaseHelper:
 
         self.conn = mysql.connector.connect(
             host=os.getenv("DB_HOST"),
-            port=int(os.getenv("DB_PORT")),
+            port=os.getenv("DB_PORT"),
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASSWORD"),
             database=os.getenv("DB_NAME"),
@@ -39,7 +39,8 @@ class DatabaseHelper:
             coastline_distance FLOAT,
             gdynia_downtown_distance FLOAT,
             gdansk_downtown_distance FLOAT,
-            sopot_downtown_distance FLOAT
+            sopot_downtown_distance FLOAT,
+            ins_date DATE
         )
         """
         try:
@@ -75,8 +76,8 @@ class DatabaseHelper:
 
         query = """
         INSERT IGNORE INTO scraped_items (url, title, price, price_per_sqr_meter, rooms, floor, square_meters, year, address,
-        coastline_distance, gdynia_downtown_distance, gdansk_downtown_distance, sopot_downtown_distance)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        coastline_distance, gdynia_downtown_distance, gdansk_downtown_distance, sopot_downtown_distance, ins_date)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 
         """
         try:
@@ -93,7 +94,8 @@ class DatabaseHelper:
                 item["coastline_distance"],
                 item["gdynia_downtown_distance"],
                 item["gdansk_downtown_distance"],
-                item["sopot_downtown_distance"]
+                item["sopot_downtown_distance"],
+                item["ins_date"]
             ))
 
             self.conn.commit()

@@ -47,6 +47,8 @@ class CleaningPipeline:
         except:
             item["year"] = None
 
+        item["ins_date"] = datetime.today().strftime("%YYYY-%MM-%DD")
+
         return item
 
 class SyntheticFeaturesPipeline:

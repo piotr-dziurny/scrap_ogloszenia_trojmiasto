@@ -25,3 +25,4 @@ class OgloszenieItem(scrapy.Item):
     gdynia_downtown_distance = scrapy.Field()
     gdansk_downtown_distance = scrapy.Field() 
     sopot_downtown_distance = scrapy.Field()
+    ins_date = scrapy.Field()
