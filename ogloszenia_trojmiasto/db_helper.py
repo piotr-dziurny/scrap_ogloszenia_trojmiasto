@@ -50,14 +50,6 @@ class DatabaseHelper:
         except mysql.connector.Error as error:
             print(f"Error creating table: {error}")
 
-    def drop_table(self):
-        drop_table_sql = """
-        DROP TABLE scraped_items
-        """
-        self.cursor.execute(drop_table_sql)
-        self.conn.commit()
-        print("Table scraped_items dropped")
-
     def get_existing_urls(self):
         """
 
@@ -108,6 +100,5 @@ class DatabaseHelper:
 
 if __name__ == "__main__":
     db_helper = DatabaseHelper()
-    db_helper.create_table()
-    #db_helper.drop_table()
+    db_helper.create_table() 
     db_helper.close()

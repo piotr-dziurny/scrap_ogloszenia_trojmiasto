@@ -1,7 +1,7 @@
 import unicodedata
 import logging
 from itemadapter import ItemAdapter
-from ogloszenia_trojmiasto.geodistance import CoastlineDistance, DowntownDistance
+from ogloszenia_trojmiasto.geodistance import load_coastline, get_coastline_distance, get_downtown_distances
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 from datetime import datetime
 
@@ -53,19 +53,25 @@ class CleaningPipeline:
 
 class SyntheticFeaturesPipeline:
     def __init__(self):
-        self.coastline_calculator = CoastlineDistance()
-        self.downtown_calculator = DowntownDistance()
+        self.coastline = load_coastline() 
         self.logger = logging.getLogger(__name__)
 
     def process_item(self, item, spider):
+        address = item.get("address")
+        if not item:
+            self.logger.warning("Item has no address. Skipping distance calcuations")
+            return item
+        
+        # coastline distance
         try:
-            item["coastline_distance"] = self.coastline_calculator.get_distance(item["address"])
+            item["coastline_distance"] = get_coastline_distance(address, self.coastline)
         except ValueError as e:
             item["coastline_distance"] = None
-            self.logger.warning(f"Failed to calculate coastline distance for address '{item['address']}': {e} - setting distance to None.")
+            self.logger.warning(f"Failed to calculate coastline distance for address '{address}': {e} - setting distance to None.")
 
+        # downtown distances
         try:
-            distances = self.downtown_calculator.get_distance(item["address"])
+            distances = get_downtown_distances(address)
             item["gdynia_downtown_distance"] = distances.get("Gdynia")
             item["gdansk_downtown_distance"] = distances.get("Gdańsk")
             item["sopot_downtown_distance"] = distances.get("Sopot")
@@ -73,7 +79,7 @@ class SyntheticFeaturesPipeline:
             item["gdynia_downtown_distance"] = None
             item["gdansk_downtown_distance"] = None
             item["sopot_downtown_distance"] = None
-            self.logger.warning(f"Failed to calculate downtown distances for address '{item['address']}': {e} - setting distances to None.")
+            self.logger.warning(f"Failed to calculate downtown distances for address '{address}': {e} - setting distances to None.")
 
         return item
 
