@@ -1,9 +1,9 @@
 import scrapy
+from ogloszenia_trojmiasto.settings import DATABASE 
 from ogloszenia_trojmiasto import items
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 import os
 import logging
-import unicodedata
 
 class OgloszeniaSpider(scrapy.Spider):
     name = "ogloszenia"
@@ -15,17 +15,21 @@ class OgloszeniaSpider(scrapy.Spider):
     
     def __init__(self):
         super().__init__()
-        self.db_helper = DatabaseHelper()
-        self.existing_urls = set(self.db_helper.get_existing_urls())
-        self.logger.info(f"Fetched {len(self.existing_urls)} urls from the database")
-        
+        if DATABASE:
+            self.db_helper = DatabaseHelper()
+            self.existing_urls = set(self.db_helper.get_existing_urls())
+            self.logger.info(f"Fetched {len(self.existing_urls)} urls from the database")
+        else:
+            self.db_helper = None
+            self.existing_urls = set()
+
     def parse(self, response):
         listings = response.css('div.list__item') # main class showing all listings
         for listing in listings:
             relative_url = listing.css("h2.list__item__content__title a::attr(href)").get() # current site
             listing_url = response.urljoin(relative_url)
 
-            if listing_url in self.existing_urls: # check if listing is in already in db
+            if DATABASE and listing_url in self.existing_urls: # check if listing is in already in db
                 self.logger.info(f"skipping {listing_url}")
                 continue
 
@@ -54,7 +58,7 @@ class OgloszeniaSpider(scrapy.Spider):
         for field, selector in fields.items():
             try:
                 if field == "address":
-                    value = response.css(selector).getall() # use getalL() because address is split across multiple elements
+                    value = response.css(selector).getall() # use getall(); address is split across multiple elements
                     ogloszenie[field] = value
                 else:
                     value = response.css(selector).get()

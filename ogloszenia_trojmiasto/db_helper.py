@@ -17,11 +17,12 @@ class DatabaseHelper:
             port=os.getenv("DB_PORT"),
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME"),
-            ssl_ca=os.getenv("SSL_CA_PATH")
+            database=os.getenv("DB_NAME")
         )
 
         self.cursor = self.conn.cursor()
+
+
 
     def create_table(self):
         create_table_sql = """
@@ -40,7 +41,7 @@ class DatabaseHelper:
             gdynia_downtown_distance FLOAT,
             gdansk_downtown_distance FLOAT,
             sopot_downtown_distance FLOAT,
-            ins_date DATE
+            ins_date TIMESTAMP 
         )
         """
         try:
@@ -74,8 +75,8 @@ class DatabaseHelper:
         """
         try:
             self.cursor.execute(query, (
-                item["title"],
                 item["url"],
+                item["title"],
                 item["price"],
                 item["price_per_sqr_meter"],
                 item["rooms"],
@@ -98,7 +99,8 @@ class DatabaseHelper:
         self.cursor.close()
         self.conn.close()
 
+
 if __name__ == "__main__":
     db_helper = DatabaseHelper()
-    db_helper.create_table() 
+    db_helper.create_table()
     db_helper.close()

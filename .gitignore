@@ -1,13 +1,10 @@
+__pycache__/
 results.csv
 test.ipynb
-result_1611.csv
 todo.md
 venv/
 .env
-libs.txt
 ca.pem
-result_2411.csv
 logs/
-result_2911.csv
 result_3011.csv
-utils/
+debug/

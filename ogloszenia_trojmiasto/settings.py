@@ -64,11 +64,20 @@ DOWNLOAD_DELAY = 2
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-   "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
-   "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 200,
-   "ogloszenia_trojmiasto.pipelines.DatabasePipeline": 300
-}
+DATABASE = True 
+
+if DATABASE:
+    ITEM_PIPELINES = {
+    "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
+    "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 200,
+    "ogloszenia_trojmiasto.pipelines.DatabasePipeline": 300
+    }
+
+else:
+    ITEM_PIPELINES = {
+    "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
+    "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 200,
+    }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -100,4 +109,4 @@ FEED_EXPORT_ENCODING = "utf-8-sig"
 os.makedirs("logs", exist_ok=True)
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 LOG_FILE = os.path.join("logs", f"spider_{timestamp}.log")
-#LOG_LEVEL = "INFO"
+LOG_LEVEL = "INFO"

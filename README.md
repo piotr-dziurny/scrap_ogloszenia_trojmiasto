@@ -1,5 +1,3 @@
-## Simple scraper for ogloszenia.trojmiasto.pl
-
 The scraped data consists of apartments from the "rynek pierwotny" and "rynek wtórny" categories.
 
 ### Scraped data
@@ -24,7 +22,48 @@ In addition to the scraped data, the scraper calculates the following synthetic 
 - **gdansk_downtown_distance**: distance from the apartment to the downtown of Gdańsk
 - **sopot_downtown_distance**: distance from the apartment to the downtown of Sopot
 
+---
 
+### Instructions
+
+1. Clone the repo
+2. Create and activate virtual environment
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+
+3. Install dependencies
+
+```
+pip install -r requirements.txt
+```
+---
+
+#### Database integration
+Requirements:
+>  * an existing MySQL database instance
+>  * database credentials specified in a `.env` file
+
+* By default, database integration is enabled (set as `DATABASE=True` in settings.py).
+* Before running the scraper with database integration, run the following command to create necessary table:
+```
+python3 db_helper.py
+```
+
+---
+
+#### Scraper run examples:
+1. save to CSV and store in database:
+```
+scrapy crawl ogloszenia -o data.csv
+```
+2. store in database only:
+
+```
+scrapy crawl ogloszenia
+```
+---
 ### Sources
 * https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
 * https://www.eea.europa.eu/data-and-maps/data/eea-coastline-for-analysis-1/gis-data/europe-coastline-shapefile

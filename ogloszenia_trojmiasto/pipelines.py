@@ -1,6 +1,5 @@
 import unicodedata
 import logging
-from itemadapter import ItemAdapter
 from ogloszenia_trojmiasto.geodistance import load_coastline, get_coastline_distance, get_downtown_distances
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 from datetime import datetime
@@ -47,7 +46,7 @@ class CleaningPipeline:
         except:
             item["year"] = None
 
-        item["ins_date"] = datetime.today().strftime("%YYYY-%MM-%DD")
+        item["ins_date"] = datetime.today()
 
         return item
 
@@ -85,7 +84,7 @@ class SyntheticFeaturesPipeline:
 
 class DatabasePipeline:
     def __init__(self):
-        self.db_helper = DatabaseHelper()
+        self.db_helper = DatabaseHelper() 
 
     def process_item(self, item, spider):
         self.db_helper.insert_item(item)
