@@ -11,7 +11,7 @@ The scraped data consists of apartments from the "rynek pierwotny" and "rynek wt
 - **price per square meters**: price per square meter of the apartment
 - **square meters**: total area of the apartment in square meters
 - **address**: address of the apartment
-
+- **city/town**: city or town in which the apartment is located
 ---
 
 ### Synthetic Features
@@ -21,7 +21,7 @@ In addition to the scraped data, the scraper calculates the following synthetic 
 - **gdynia_downtown_distance**: distance from the apartment to the downtown of Gdynia
 - **gdansk_downtown_distance**: distance from the apartment to the downtown of Gdańsk
 - **sopot_downtown_distance**: distance from the apartment to the downtown of Sopot
-
+- **area**: district or county in which the apartment is located
 ---
 
 ### Instructions

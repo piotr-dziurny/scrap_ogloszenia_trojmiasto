@@ -69,14 +69,16 @@ DATABASE = True
 if DATABASE:
     ITEM_PIPELINES = {
     "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
-    "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 200,
-    "ogloszenia_trojmiasto.pipelines.DatabasePipeline": 300
+    "ogloszenia_trojmiasto.pipelines.PricePipeline": 200, 
+    "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 300,
+    "ogloszenia_trojmiasto.pipelines.DatabasePipeline": 400
     }
 
 else:
     ITEM_PIPELINES = {
     "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
-    "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 200,
+    "ogloszenia_trojmiasto.pipelines.PricePipeline": 200, 
+    "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 300,
     }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

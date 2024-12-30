@@ -4,42 +4,63 @@ from shapely.ops import nearest_points
 import geopandas as gpd
 from geographiclib.geodesic import Geodesic
 import os
+import time
 
-### util functions; distance calculation, converting address to coords, loading geometry of the coastline ###
-def get_coordinates(address: str) -> tuple:
+geolocator = Nominatim(user_agent="geo_distance")
+geocoding_cache = {} # store processed data for current scraping session
+
+downtown_coordinates = {
+    "Gdańsk": (54.3495703, 18.6477211),
+    "Gdynia": (54.5197073, 18.5391734),
+    "Sopot": (54.441524799999996, 18.562195548794275)
+}
+
+def get_location_data(address: str, retry_count: int = 3) -> dict:
     """
-    
-    get latitude and longitude of an address using Geopy
-
+    get geo data with single api call 
     """
+    if address in geocoding_cache:
+        return geocoding_cache[address]
+   
+    # type of area to return from API json response
+    CITY_AREA_MAPPINGS = {
+        "sopot": "quarter",
+        "gdynia": "suburb",
+        "gdańsk": "suburb"
+    }
+ 
+    for attempt in range(retry_count):
+        try:
+            time.sleep(1) # respect api rate limits 
+            location = geolocator.geocode(address, addressdetails=True)
+            
+            if not location:
+                raise ValueError(f"address {address} not found")
 
-    geolocator = Nominatim(user_agent="geo_distance")
-    location = geolocator.geocode(address)
-    if not location:
-        raise ValueError("Can't get coordinates: address not found")
+            raw_data = location.raw
+            address_data = raw_data["address"]
+            
+            # get district/area based on city name. If city name not in the dict, it's a county town
+            area_type = CITY_AREA_MAPPINGS.get(address_data.get("city", "").lower(), "county")
+            
+            loc = {
+                "longitude": float(raw_data["lon"]),
+                "latitude": float(raw_data["lat"]),
+                "area": address_data.get(area_type, None)
+            }
+            
+            geocoding_cache[address] = loc
 
-    return location.longitude, location.latitude
+            return loc
 
-
-def calculate_distance(coord1: tuple, coord2: tuple) -> float:
-    """
-    
-    calculate geodesic distance between coordinates using Vincenty's Formula
-
-    https://gis.stackexchange.com/questions/102837/calculated-distance-doesnt-match-google-earth
-
-    """
-    geod = Geodesic.WGS84
-    result = geod.Inverse(coord1[1], coord1[0], coord2[1], coord2[0])  # lat1, lon1, lat2, lon2
-    
-    return result["s12"] / 1000 
-
+        except Exception as e:
+            if attempt == retry_count - 1:
+                raise ValueError(f"failed to geocode address after {retry_count} attempts: {e}")
+            time.sleep(5)
 
 def load_coastline():
     """
-
     load and clip europe's coastline shapefile
-
     """
 
     project_root = os.path.dirname(os.path.abspath(__file__))
@@ -60,24 +81,25 @@ def load_coastline():
     
     return coastline
 
-########################
-
-def get_coastline_distance(address: str, coastline) -> float:
+def calculate_distance(coord1: tuple, coord2: tuple) -> float:
     """
+    calculate geodesic distance between coordinates using Vincenty's Formula
+
+    https://gis.stackexchange.com/questions/102837/calculated-distance-doesnt-match-google-earth
+    https://geographiclib.sourceforge.io/html/python/code.html
+    """
+    geod = Geodesic.WGS84
+    result = geod.Inverse(coord1[0], coord1[1], coord2[0], coord2[1])  # Inverse(lat1: float, lon1: float, lat2: float, lon2: float)
     
+    return result["s12"] / 1000 # return distance in kilometers
+
+def calculate_coastline_distance(address_point: Point, coastline) -> float:
+    """
     calculate the distance from an address to the nearest point on the coastline
-    
     """
-
-    # get coordinates of the address:
-    address_point = Point(get_coordinates(address))
-
-    # extract goemetries from the coastline MultiLineString:
-    line_strings = [line for line in coastline.geoms]
-    
     min_distance = float("inf")
     # calculate distance to the nearest point on the coastline:
-    for line in line_strings:
+    for line in coastline.geoms:
         nearest_point = nearest_points(address_point, line)[1]
         distance = calculate_distance(
             (address_point.y, address_point.x), (nearest_point.y, nearest_point.x)
@@ -88,52 +110,51 @@ def get_coastline_distance(address: str, coastline) -> float:
 
     return min_distance
 
-
-def get_downtown_distances(address: str) -> dict:
+def get_all_distances(address: str, coastline) -> dict:
     """
-    
-    calculate the distance from an address to the downtowns of 3city
-    
+    calculate distances to coastline and downtowns and return adressess district/area/county
     """
-
-    downtown_coordinates = {
-    "Gdańsk": (18.6477211, 54.3495703),
-    "Gdynia": (18.5391734, 54.5197073),
-    "Sopot": (18.562195548794275, 54.441524799999996)
-    }
-
     try:
-        address_coords = get_coordinates(address)
-    except:
-        raise ValueError(f"Can't calculate distance to downtown: address {address} is not specific enough")
-        return None
+        loc_data = get_location_data(address)
+        lon, lat = loc_data["longitude"], loc_data["latitude"]
+        point = Point(lon, lat)
 
-    gdynia_downtown_coords = downtown_coordinates.get("Gdynia")
-    gdansk_downtown_coords = downtown_coordinates.get("Gdańsk")
-    sopot_downtown_coords = downtown_coordinates.get("Sopot")
+        # calculate coastline distance
+        coastline_distance = calculate_coastline_distance(point, coastline)
 
-    result = {
-        "Gdynia": calculate_distance(address_coords, gdynia_downtown_coords),
-        "Gdańsk": calculate_distance(address_coords, gdansk_downtown_coords),
-        "Sopot": calculate_distance(address_coords, sopot_downtown_coords)
-    }
+        # calculate downtown distances
+        downtown_distances = {
+            city: calculate_distance((lat, lon), coords)
+            for city, coords in downtown_coordinates.items()
+        }
 
-    return result
+        return {
+            "coastline_distance": coastline_distance,
+            "gdynia_downtown_distance": downtown_distances["Gdynia"],
+            "gdansk_downtown_distance": downtown_distances["Gdańsk"],
+            "sopot_downtown_distance": downtown_distances["Sopot"],
+            "area": loc_data["area"]
+        }
+
+    except ValueError:
+        return {
+            "coastline_distance": None,
+            "gdynia_downtown_distance": None,
+            "gdansk_downtown_distance": None, 
+            "sopot_downtown_distance": None,
+            "area": None
+        }
 
 if __name__ == "__main__":
     coastline = load_coastline()
-    address = "Gdańsk Morena Morenowe Wzgórze"
+    addresses = {
+        "test": "alksdaksjhd",
+        "sopot": "Sopot Górny Sopot 23 Marca 73",
+        "gdynia": "Gdynia Śródmieście Świętojańska 39",
+        "gdańsk": "Gdańsk Wrzeszcz Górny de Gaulle",
+        "reda":  "Reda Marii Konopnickiej"
+    }
 
-    try:
-        coastline_distance = get_coastline_distance(address, coastline) 
-        downtown_distances = get_downtown_distances(address) 
-        gdynia_downtown_coords = downtown_distances.get("Gdynia")
-        gdansk_downtown_coords = downtown_distances.get("Gdańsk")
-        sopot_downtown_coords = downtown_distances.get("Sopot")
-        print(f"Distance from {address} to coastline: {coastline_distance:.3f} km\n" \
-                f"Distance to downtowns:\n" \
-                    f"Gdynia: {gdynia_downtown_coords:.3f} km,\n" \
-                    f"Gdańsk: {gdansk_downtown_coords:.3f} km,\n" \
-                        f"Sopot: {sopot_downtown_coords:.3f} km")
-    except ValueError as e:
-        print(f"Error: {e}")
+    for ad in addresses:
+        result = get_all_distances(addresses[ad], coastline)
+        print(result)

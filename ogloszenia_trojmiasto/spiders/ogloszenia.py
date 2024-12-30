@@ -4,6 +4,7 @@ from ogloszenia_trojmiasto import items
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 import os
 import logging
+from datetime import datetime, timedelta
 
 class OgloszeniaSpider(scrapy.Spider):
     name = "ogloszenia"
@@ -17,7 +18,7 @@ class OgloszeniaSpider(scrapy.Spider):
         super().__init__()
         if DATABASE:
             self.db_helper = DatabaseHelper()
-            self.existing_urls = set(self.db_helper.get_existing_urls())
+            self.existing_urls = self.db_helper.get_existing_urls()
             self.logger.info(f"Fetched {len(self.existing_urls)} urls from the database")
         else:
             self.db_helper = None
@@ -29,9 +30,11 @@ class OgloszeniaSpider(scrapy.Spider):
             relative_url = listing.css("h2.list__item__content__title a::attr(href)").get() # current site
             listing_url = response.urljoin(relative_url)
 
-            if DATABASE and listing_url in self.existing_urls: # check if listing is in already in db
-                self.logger.info(f"skipping {listing_url}")
-                continue
+            if DATABASE and listing_url in self.existing_urls: # check if listing is in db
+                scraped_ts = self.existing_urls[listing_url] # get timestamp of the last scrape
+                if scraped_ts >= datetime.now() - timedelta(days=7):
+                    self.logger.info(f"skipping {listing_url} - data scraped within last 7 days")
+                    continue
 
             yield response.follow(listing_url, callback = self.parse_subsite) # enter subsite
 
@@ -53,6 +56,7 @@ class OgloszeniaSpider(scrapy.Spider):
             "price_per_sqr_meter": "span:contains('Cena za m') + span::text",
             "square_meters": "span:contains('Pow. nieruchomości') + span::text",
             "address": "i.trm.trm-location + span::text",
+            "city": "i.trm.trm-location + span::text",
         }
 
         for field, selector in fields.items():

@@ -4,7 +4,8 @@ test.ipynb
 todo.md
 venv/
 .env
-ca.pem
 logs/
 result_3011.csv
+result_3012.csv
+geodistance.bak
 debug/
