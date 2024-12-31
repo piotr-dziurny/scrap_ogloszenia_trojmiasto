@@ -44,8 +44,8 @@ def get_location_data(address: str, retry_count: int = 3) -> dict:
             area_type = CITY_AREA_MAPPINGS.get(address_data.get("city", "").lower(), "county")
             
             loc = {
-                "longitude": float(raw_data["lon"]),
                 "latitude": float(raw_data["lat"]),
+                "longitude": float(raw_data["lon"]),
                 "area": address_data.get(area_type, None)
             }
             
@@ -84,6 +84,8 @@ def load_coastline():
 def calculate_distance(coord1: tuple, coord2: tuple) -> float:
     """
     calculate geodesic distance between coordinates using Vincenty's Formula
+    
+    coordinates in format (latitude, longitude)
 
     https://gis.stackexchange.com/questions/102837/calculated-distance-doesnt-match-google-earth
     https://geographiclib.sourceforge.io/html/python/code.html
@@ -133,7 +135,8 @@ def get_all_distances(address: str, coastline) -> dict:
             "gdynia_downtown_distance": downtown_distances["Gdynia"],
             "gdansk_downtown_distance": downtown_distances["Gdańsk"],
             "sopot_downtown_distance": downtown_distances["Sopot"],
-            "area": loc_data["area"]
+            "area": loc_data["area"],
+            "coords": (lat, lon)
         }
 
     except ValueError:
@@ -142,7 +145,8 @@ def get_all_distances(address: str, coastline) -> dict:
             "gdynia_downtown_distance": None,
             "gdansk_downtown_distance": None, 
             "sopot_downtown_distance": None,
-            "area": None
+            "area": None,
+            "coords": None
         }
 
 if __name__ == "__main__":

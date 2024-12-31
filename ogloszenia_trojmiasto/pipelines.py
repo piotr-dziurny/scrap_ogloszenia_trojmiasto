@@ -1,5 +1,7 @@
 import unicodedata
 import logging
+
+from geopy.geocoders.base import logger
 from ogloszenia_trojmiasto.geodistance import load_coastline, get_all_distances 
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 from datetime import datetime
@@ -11,47 +13,37 @@ from datetime import datetime
 
 class CleaningPipeline:
     def process_item(self, item, spider):        
+        conversions = {
+            "address": lambda x: unicodedata.normalize("NFKC", "".join(x).strip()),
+            "city": lambda x: unicodedata.normalize("NFKC", x),
+            "floor": lambda x: 0 if x == "Parter" else int(x),
+            "price": lambda x: float(x[:-2].replace(" ", "")),
+            "price_per_sqr_meter": lambda x: float(x.replace(",", ".")),
+            "rooms": int,
+            "square_meters": lambda x: float(x.replace(",", ".")),
+            "year": lambda x: datetime.strptime(x, "%Y"),
+          }
+ 
         try:
-            item["address"] = unicodedata.normalize("NFKC", "".join(item["address"]).strip())
-        except (AttributeError, TypeError, KeyError) as e:
-            self.logger.info(f"No adress found in CleaningPipeline: {e}")
+            item["address"] = conversions["address"](item["address"])
+        except Exception as e:
+            logger.info(f"No address found in {item["url"]}: {e}")
             item["address"] = None
-        try:
-            item["city"] = unicodedata.normalize("NFKC", item["city"])
-        except:
+        try:    
+            item["city"] = conversions["city"](item["city"]) 
+        except Exception as e:
+            logger.info(f"No city found in {item["url"]}: {e}") 
             item["city"] = None
 
-        try:
-            item["floor"] = 0 if item["floor"] == "Parter" else int(item["floor"])
-        except:
-            item["floor"] = None
-
-        try:
-            item["price"] = float(item["price"][:-2].replace(" ", ""))
-        except:
-            item["price"] = None
-
-        try:
-            item["price_per_sqr_meter"] = float(item["price_per_sqr_meter"].replace(",", "."))
-        except:
-            item["price_per_sqr_meter"] = None
-
-        try:
-            item["rooms"] = int(item["rooms"])
-        except:
-            item["rooms"] = None
-
-        try:
-            item["square_meters"] = float(item["square_meters"].replace(",", "."))
-        except:
-            item["square_meters"] = None
-
-        try:
-            item["year"] = datetime.strptime(item["year"], "%Y")
-        except:
-            item["year"] = None
-
         item["created_ts"] = datetime.now()
+
+        for field, converter in conversions.items(): 
+            if field in ("address", "city", "created_ts"):
+                continue 
+            try:
+                item[field] = converter(item[field]) if item.get(field) else None
+            except Exception:
+                item[field] = None
 
         return item
 
@@ -73,7 +65,7 @@ class PricePipeline:
             
             # 2. missing price_per_sqr_meter but have price and square_meters
             elif item["price_per_sqr_meter"] is None and item["price"] is not None and item["square_meters"] is not None:
-                if item["square_meters"] > 0:  # Avoid division by zero
+                if item["square_meters"] > 0:  # avoid division by zero
                     item["price_per_sqr_meter"] = round(item["price"] / item["square_meters"], 2)
                     self.logger.info(f"Calculated missing price per square meter for {item['url']}")
 
@@ -88,11 +80,11 @@ class SyntheticFeaturesPipeline:
         self.logger = logging.getLogger(__name__)
 
     def process_item(self, item, spider):
-        address = item.get("address")
+        address = item.get("address", None)
         if not address:
             self.logger.warning("Item has no address. Skipping geocoding data")
-        
-        distances = get_all_distances(address or "", self.coastline)
+
+        distances = get_all_distances(address, self.coastline)
         item.update(distances)
         return item
 

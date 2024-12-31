@@ -34,11 +34,12 @@ class DatabaseHelper:
             year DATE,
             address VARCHAR(255),
             city VARCHAR(255),
+            area VARCHAR(255),
             coastline_distance FLOAT,
             gdynia_downtown_distance FLOAT,
             gdansk_downtown_distance FLOAT,
             sopot_downtown_distance FLOAT,
-            area VARCHAR(255),
+            coords POINT, 
             created_ts TIMESTAMP,
             scraped_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             is_latest BOOLEAN NOT NULL DEFAULT 1,
@@ -120,9 +121,9 @@ class DatabaseHelper:
         """
 
         query = """
-        INSERT IGNORE INTO scraped_items (url, title, price, price_per_sqr_meter, rooms, floor, square_meters, year, address, city,
-        coastline_distance, gdynia_downtown_distance, gdansk_downtown_distance, sopot_downtown_distance, area, created_ts, scraped_ts, is_latest)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT IGNORE INTO scraped_items (url, title, price, price_per_sqr_meter, rooms, floor, square_meters, year, address, city, area
+        coastline_distance, gdynia_downtown_distance, gdansk_downtown_distance, sopot_downtown_distance, coords, created_ts, scraped_ts, is_latest)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 
         """
         try:
@@ -137,11 +138,12 @@ class DatabaseHelper:
                 item["year"],
                 item["address"],
                 item["city"],
+                item["area"],
                 item["coastline_distance"],
                 item["gdynia_downtown_distance"],
                 item["gdansk_downtown_distance"],
                 item["sopot_downtown_distance"],
-                item["area"],
+                item["coords"], 
                 item["created_ts"],
                 item["scraped_ts"],
                 item["is_latest"],

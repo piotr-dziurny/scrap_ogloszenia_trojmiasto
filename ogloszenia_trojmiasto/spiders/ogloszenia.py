@@ -66,7 +66,7 @@ class OgloszeniaSpider(scrapy.Spider):
                     ogloszenie[field] = value
                 else:
                     value = response.css(selector).get()
-                    ogloszenie[field] = value.strip() if value else None # strip result for readbility
+                    ogloszenie[field] = value.strip() if value else None # strip result for readability 
             except Exception as e:
                 self.logger.error(f"Error extracting {field}: {e}")
                 ogloszenie[field] = None

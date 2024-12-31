@@ -64,7 +64,7 @@ DOWNLOAD_DELAY = 2
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-DATABASE = True 
+DATABASE = False 
 
 if DATABASE:
     ITEM_PIPELINES = {
