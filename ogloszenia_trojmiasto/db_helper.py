@@ -19,6 +19,7 @@ class DatabaseHelper:
         )
 
         self.cursor = self.conn.cursor()
+        self.create_table()
 
     def create_table(self):
         create_table_sql = """
@@ -39,7 +40,7 @@ class DatabaseHelper:
             gdynia_downtown_distance FLOAT,
             gdansk_downtown_distance FLOAT,
             sopot_downtown_distance FLOAT,
-            coords POINT, 
+            coords VARCHAR(255),
             created_ts TIMESTAMP,
             scraped_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             is_latest BOOLEAN NOT NULL DEFAULT 1,
@@ -50,7 +51,6 @@ class DatabaseHelper:
         try:
             self.cursor.execute(create_table_sql)
             self.conn.commit()
-            print("Table scraped_items created")
         except mysql.connector.Error as error:
             print(f"Error creating table: {error}")
 
@@ -66,15 +66,6 @@ class DatabaseHelper:
         except mysql.connector.Error as error:
             print(f"Error updating scraped_ts: {error}")
 
-    def get_existing_urls(self):
-        """
-        get all urls and their last scraped timestamps currently in the db where is_latest = 1
-        """
-
-        self.cursor.execute("SELECT url, scraped_ts FROM scraped_items WHERE is_latest = 1")
-        return {row[0]: row[1] for row in self.cursor.fetchall()}
-
-
     def update_is_latest(self, url):
         """
         set is_latest column to 0 for the given url
@@ -86,6 +77,15 @@ class DatabaseHelper:
             self.conn.commit()
         except mysql.connector.Error as error:
             print(f"Error updating is_latest: {error}")
+
+    def get_existing_urls(self):
+        """
+        get all urls and their last scraped timestamps currently in the db where is_latest = 1
+        """
+
+        self.cursor.execute("SELECT url, scraped_ts FROM scraped_items WHERE is_latest = 1")
+        return {row[0]: row[1] for row in self.cursor.fetchall()}
+
 
     def is_changed(self, url, item):
         """
@@ -121,7 +121,7 @@ class DatabaseHelper:
         """
 
         query = """
-        INSERT IGNORE INTO scraped_items (url, title, price, price_per_sqr_meter, rooms, floor, square_meters, year, address, city, area
+        INSERT IGNORE INTO scraped_items (url, title, price, price_per_sqr_meter, rooms, floor, square_meters, year, address, city, area,
         coastline_distance, gdynia_downtown_distance, gdansk_downtown_distance, sopot_downtown_distance, coords, created_ts, scraped_ts, is_latest)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 

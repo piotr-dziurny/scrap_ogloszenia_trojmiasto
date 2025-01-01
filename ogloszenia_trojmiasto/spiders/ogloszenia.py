@@ -71,6 +71,7 @@ class OgloszeniaSpider(scrapy.Spider):
                 self.logger.error(f"Error extracting {field}: {e}")
                 ogloszenie[field] = None
 
+        ogloszenie["scraped_ts"] = datetime.now()
         ogloszenie["url"] = response.url
 
         yield ogloszenie

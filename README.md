@@ -45,12 +45,7 @@ Requirements:
 >  * an existing MySQL database instance
 >  * database credentials specified in a `.env` file
 
-* By default, database integration is disabled (set as `DATABASE=False` in settings.py).
-* Before running the scraper with database integration, run the following command to create necessary table:
-```
-python3 db_helper.py
-```
-
+* By default, database integration is enabled (set as `DATABASE=True` in settings.py).
 ---
 
 #### Scraper run examples:

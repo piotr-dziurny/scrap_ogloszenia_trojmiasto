@@ -64,7 +64,7 @@ DOWNLOAD_DELAY = 2
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-DATABASE = False 
+DATABASE = True
 
 if DATABASE:
     ITEM_PIPELINES = {
@@ -112,3 +112,6 @@ os.makedirs("logs", exist_ok=True)
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 LOG_FILE = os.path.join("logs", f"spider_{timestamp}.log")
 LOG_LEVEL = "INFO"
+LOG_STDOUT = True
+LOG_ENABLED = True
+LOG_FORMAT = "%(asctime)s [%(name)s] %(levelname)s: %(message)s"

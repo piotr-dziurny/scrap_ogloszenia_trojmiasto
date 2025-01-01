@@ -136,7 +136,7 @@ def get_all_distances(address: str, coastline) -> dict:
             "gdansk_downtown_distance": downtown_distances["Gdańsk"],
             "sopot_downtown_distance": downtown_distances["Sopot"],
             "area": loc_data["area"],
-            "coords": (lat, lon)
+            "coords": f"{lat}, {lon}"
         }
 
     except ValueError:
