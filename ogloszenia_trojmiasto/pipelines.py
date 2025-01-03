@@ -97,17 +97,17 @@ class DatabasePipeline:
         
         if url in self.db_helper.get_existing_urls():
             if self.db_helper.is_changed(url, item):
-                # data changed - update old record and insert new one
-                self.db_helper.update_is_latest(url)
-                item["is_latest"] = 1
+                # data changed - update old record and insert new one:
+                self.db_helper.update_is_latest(url) # set old item to is_latest = 0
+                item["is_latest"] = 1 # set current item to is_latest = 1
                 self.db_helper.insert_item(item)
                 spider.logger.info(f"Data changed for {url} - inserted new row and updated is_latest")
             else:
-                # data unchanged - update last_check_ts
+                # data unchanged - update scraped_ts
                 self.db_helper.update_scraped_ts(url)
                 spider.logger.info(f"No data change for {url} - updated scraped_ts")
         else:
-            # new listing - insert
+            # new listing - insert and set is_latest = 1
             item["is_latest"] = 1
             self.db_helper.insert_item(item)
             spider.logger.info(f"New entry for {url} - inserted into database")

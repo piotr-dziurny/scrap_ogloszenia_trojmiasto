@@ -161,4 +161,4 @@ if __name__ == "__main__":
 
     for ad in addresses:
         result = get_all_distances(addresses[ad], coastline)
-        print(result)
+        print(f"{ad}: {result}\n")

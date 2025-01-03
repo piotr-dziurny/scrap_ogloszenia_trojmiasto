@@ -26,6 +26,12 @@ In addition to the scraped data, the scraper calculates the following synthetic 
 
 ### Instructions
 
+#### Database integration
+Requirements:
+>   * an existing MySQL database instance
+>       * database credentials specified in a `.env` file
+
+
 1. Clone the repo
 2. Create and activate virtual environment
 ```
@@ -38,26 +44,14 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
----
-
-#### Database integration
-Requirements:
->  * an existing MySQL database instance
->  * database credentials specified in a `.env` file
-
-* By default, database integration is enabled (set as `DATABASE=True` in settings.py).
----
-
-#### Scraper run examples:
-1. save to CSV and store in database:
-```
-scrapy crawl ogloszenia -o data.csv
-```
-2. store in database only:
+4. Run scraper
 
 ```
-scrapy crawl ogloszenia
+python3 run_spider.py
 ```
+
+Logs are saved in the logs/ directory which is automatically created when the spider is run for the first time.
+
 ---
 ### Sources
 * https://www.naturalearthdata.com/downloads/110m-cultural-vectors/

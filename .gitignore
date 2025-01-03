@@ -5,7 +5,8 @@ todo.md
 venv/
 .env
 logs/
-result_3011.csv
-result_3012.csv
 geodistance.bak
 debug/
+result_0101.csv
+tree.md
+result_3011.csv

@@ -93,7 +93,7 @@ class DatabaseHelper:
         returns True if data has changed, False otherwise
         """
         query = """
-        SELECT title, price, price_per_sqr_meter, rooms, floor, square_meters, year, address, city 
+        SELECT price, price_per_sqr_meter 
         FROM scraped_items 
         WHERE url = %s AND is_latest = 1
         """
@@ -103,13 +103,10 @@ class DatabaseHelper:
         if not result:
             return True  # new entry
         
-        fields_to_compare = ["title", "price", "price_per_sqr_meter", "rooms", 
-                            "floor", "square_meters", "year", "address", "city"]
+        fields_to_compare = ["price", "price_per_sqr_meter"] 
         
-        current_values = [item[field] for field in fields_to_compare]
-        
-        for db_value, new_value in zip(result, current_values):
-            if db_value != new_value:
+        for field, db_value in zip(fields_to_compare, result):
+            if str(item.get(field)) != str(db_value):
                 return True  # data has changed
                 
         return False  # no changes detected
@@ -159,5 +156,4 @@ class DatabaseHelper:
 
 if __name__ == "__main__":
     db_helper = DatabaseHelper()
-    db_helper.create_table()
-    db_helper.close()
+    print(db_helper.get_existing_urls())

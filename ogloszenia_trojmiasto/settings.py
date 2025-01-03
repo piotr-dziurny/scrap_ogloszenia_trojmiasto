@@ -64,21 +64,11 @@ DOWNLOAD_DELAY = 2
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-DATABASE = True
-
-if DATABASE:
-    ITEM_PIPELINES = {
+ITEM_PIPELINES = {
     "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
     "ogloszenia_trojmiasto.pipelines.PricePipeline": 200, 
     "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 300,
     "ogloszenia_trojmiasto.pipelines.DatabasePipeline": 400
-    }
-
-else:
-    ITEM_PIPELINES = {
-    "ogloszenia_trojmiasto.pipelines.CleaningPipeline": 100,
-    "ogloszenia_trojmiasto.pipelines.PricePipeline": 200, 
-    "ogloszenia_trojmiasto.pipelines.SyntheticFeaturesPipeline": 300,
     }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -106,7 +96,6 @@ else:
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8-sig"
-
 
 os.makedirs("logs", exist_ok=True)
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

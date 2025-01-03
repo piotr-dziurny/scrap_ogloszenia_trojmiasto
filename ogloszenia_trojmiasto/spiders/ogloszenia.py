@@ -1,5 +1,4 @@
 import scrapy
-from ogloszenia_trojmiasto.settings import DATABASE 
 from ogloszenia_trojmiasto import items
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 import os
@@ -16,13 +15,9 @@ class OgloszeniaSpider(scrapy.Spider):
     
     def __init__(self):
         super().__init__()
-        if DATABASE:
-            self.db_helper = DatabaseHelper()
-            self.existing_urls = self.db_helper.get_existing_urls()
-            self.logger.info(f"Fetched {len(self.existing_urls)} urls from the database")
-        else:
-            self.db_helper = None
-            self.existing_urls = set()
+        self.db_helper = DatabaseHelper()
+        self.existing_urls = self.db_helper.get_existing_urls()
+        self.logger.info(f"Fetched {len(self.existing_urls)} urls from the database")
 
     def parse(self, response):
         listings = response.css('div.list__item') # main class showing all listings
@@ -30,7 +25,7 @@ class OgloszeniaSpider(scrapy.Spider):
             relative_url = listing.css("h2.list__item__content__title a::attr(href)").get() # current site
             listing_url = response.urljoin(relative_url)
 
-            if DATABASE and listing_url in self.existing_urls: # check if listing is in db
+            if listing_url in self.existing_urls: # check if listing is in db
                 scraped_ts = self.existing_urls[listing_url] # get timestamp of the last scrape
                 if scraped_ts >= datetime.now() - timedelta(days=7):
                     self.logger.info(f"skipping {listing_url} - data scraped within last 7 days")
