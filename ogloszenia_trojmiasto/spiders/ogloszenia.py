@@ -50,8 +50,7 @@ class OgloszeniaSpider(scrapy.Spider):
             "year": "span:contains('Rok budowy') + span::text",
             "price_per_sqr_meter": "span:contains('Cena za m') + span::text",
             "square_meters": "span:contains('Pow. nieruchomości') + span::text",
-            "address": "i.trm.trm-location + span::text",
-            "city": "i.trm.trm-location + span::text",
+            "address": "i.trm.trm-location + span::text"
         }
 
         for field, selector in fields.items():

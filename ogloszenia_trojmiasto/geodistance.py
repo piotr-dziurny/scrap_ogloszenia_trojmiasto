@@ -46,7 +46,8 @@ def get_location_data(address: str, retry_count: int = 3) -> dict:
             loc = {
                 "latitude": float(raw_data["lat"]),
                 "longitude": float(raw_data["lon"]),
-                "area": address_data.get(area_type, None)
+                "area": address_data.get(area_type, None),
+                "city": address_data.get("city") or address_data.get("town") or address_data.get("village")
             }
             
             geocoding_cache[address] = loc
@@ -112,7 +113,7 @@ def calculate_coastline_distance(address_point: Point, coastline) -> float:
 
     return min_distance
 
-def get_all_distances(address: str, coastline) -> dict:
+def get_all_geodata(address: str, coastline) -> dict:
     """
     calculate distances to coastline and downtowns and return adressess district/area/county
     """
@@ -135,8 +136,10 @@ def get_all_distances(address: str, coastline) -> dict:
             "gdynia_downtown_distance": downtown_distances["Gdynia"],
             "gdansk_downtown_distance": downtown_distances["Gdańsk"],
             "sopot_downtown_distance": downtown_distances["Sopot"],
+            "city": loc_data["city"],
             "area": loc_data["area"],
-            "coords": f"{lat}, {lon}"
+            "latitude": lat,
+            "longitude": lon
         }
 
     except ValueError:
@@ -145,14 +148,17 @@ def get_all_distances(address: str, coastline) -> dict:
             "gdynia_downtown_distance": None,
             "gdansk_downtown_distance": None, 
             "sopot_downtown_distance": None,
+            "city": None,
             "area": None,
-            "coords": None
+            "latitude": None,
+            "longitude": None
         }
 
 if __name__ == "__main__":
     coastline = load_coastline()
     addresses = {
         "test": "alksdaksjhd",
+        "cedry małe": "Cedry Małe Kolorowa",
         "sopot": "Sopot Górny Sopot 23 Marca 73",
         "gdynia": "Gdynia Śródmieście Świętojańska 39",
         "gdańsk": "Gdańsk Wrzeszcz Górny de Gaulle",

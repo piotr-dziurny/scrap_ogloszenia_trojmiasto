@@ -5,6 +5,7 @@ from geopy.geocoders.base import logger
 from ogloszenia_trojmiasto.geodistance import load_coastline, get_all_distances 
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 from datetime import datetime
+import re
 
 # Define your item pipelines here
 #
@@ -14,8 +15,7 @@ from datetime import datetime
 class CleaningPipeline:
     def process_item(self, item, spider):        
         conversions = {
-            "address": lambda x: unicodedata.normalize("NFKC", "".join(x).strip()),
-            "city": lambda x: unicodedata.normalize("NFKC", x),
+            "address": self.clean_address,
             "floor": lambda x: 0 if x == "Parter" else int(x),
             "price": lambda x: float(x[:-2].replace(" ", "")),
             "price_per_sqr_meter": lambda x: float(x.replace(",", ".")),
@@ -29,16 +29,11 @@ class CleaningPipeline:
         except Exception as e:
             logger.info(f"No address found in {item["url"]}: {e}")
             item["address"] = None
-        try:    
-            item["city"] = conversions["city"](item["city"]) 
-        except Exception as e:
-            logger.info(f"No city found in {item["url"]}: {e}") 
-            item["city"] = None
 
         item["created_ts"] = datetime.now()
 
         for field, converter in conversions.items(): 
-            if field in ("address", "city", "created_ts"):
+            if field in ("address", "created_ts"):
                 continue 
             try:
                 item[field] = converter(item[field]) if item.get(field) else None
@@ -46,6 +41,22 @@ class CleaningPipeline:
                 item[field] = None
 
         return item
+
+    @staticmethod
+    def clean_address(x):
+        address = "".join(x).strip()
+        address = re.sub(r"\s*\([^)]*\)", "", address) # remove (gw), (gm) etc.
+ 
+        # get rid of duplicates in address (e.g. Sopot Dolny Sopot -> Sopot Dolny):
+        words = address.split()
+        seen = set()
+        cleaned_words = []
+        for word in words:
+            if word not in seen:
+                cleaned_words.append(word)
+                seen.add(word)
+                
+        return unicodedata.normalize("NFKC", " ".join(cleaned_words))
 
 
 class PricePipeline:
@@ -84,7 +95,7 @@ class SyntheticFeaturesPipeline:
         if not address:
             self.logger.warning("Item has no address. Skipping geocoding data")
 
-        distances = get_all_distances(address, self.coastline)
+        distances = get_all_geodata(address, self.coastline)
         item.update(distances)
         return item
 
