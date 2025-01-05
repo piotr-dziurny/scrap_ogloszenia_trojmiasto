@@ -2,7 +2,7 @@ import unicodedata
 import logging
 
 from geopy.geocoders.base import logger
-from ogloszenia_trojmiasto.geodistance import load_coastline, get_all_distances 
+from ogloszenia_trojmiasto.geodistance import load_coastline, get_all_geodata 
 from ogloszenia_trojmiasto.db_helper import DatabaseHelper
 from datetime import datetime
 import re
