@@ -32,7 +32,7 @@ class DatabaseHelper:
             rooms INT,
             floor INT,
             square_meters FLOAT,
-            year DATE,
+            year VARCHAR(255),
             address VARCHAR(255),
             city VARCHAR(255),
             area VARCHAR(255),
@@ -40,8 +40,8 @@ class DatabaseHelper:
             gdynia_downtown_distance FLOAT,
             gdansk_downtown_distance FLOAT,
             sopot_downtown_distance FLOAT,
-            latitude VARCHAR(255),
-            longitude VARCHAR(255),
+            latitude DECIMAL(15, 12),
+            longitude DECIMAL(15, 12),
             created_ts TIMESTAMP,
             scraped_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             is_latest BOOLEAN NOT NULL DEFAULT 1,
@@ -115,7 +115,7 @@ class DatabaseHelper:
 
     def insert_item(self, item):
         """
-        insert new item into the database. If listing's url is in database -> skip
+        insert new item into the database.
         """
 
         query = """

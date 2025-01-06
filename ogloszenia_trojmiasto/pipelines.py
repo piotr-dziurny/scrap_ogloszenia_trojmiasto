@@ -20,8 +20,7 @@ class CleaningPipeline:
             "price": lambda x: float(x[:-2].replace(" ", "")),
             "price_per_sqr_meter": lambda x: float(x.replace(",", ".")),
             "rooms": int,
-            "square_meters": lambda x: float(x.replace(",", ".")),
-            "year": lambda x: datetime.strptime(x, "%Y"),
+            "square_meters": lambda x: float(x.replace(",", "."))
           }
  
         try:
