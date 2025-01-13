@@ -225,15 +225,15 @@ def update_graphs(selected_cities):
     valid_cities = city_counts[city_counts >= 1].index # only include cities with 1 or more listings
     filtered_city_data = data[data["city"].isin(valid_cities)]
     city_comparison = filtered_city_data.groupby("city").agg(
-        avg_price=("price", "mean"),
-        avg_price_per_sqr=("price_per_sqr_meter", "mean"),
+        median_price=("price", "median"),
+        median_price_per_sqr=("price_per_sqr_meter", "median"),
         count=("price", "count")
     ).reset_index()
     city_bar = px.bar(
         city_comparison, 
         x="city", 
-        y=["avg_price", "avg_price_per_sqr"],
-        title="Average price/price per square meter by city",
+        y=["median_price", "median_price_per_sqr"],
+        title="Median price/price per square meter by city",
         labels={"value": "PLN", "variable": "Metric"},
         barmode="group",
         text="count",
