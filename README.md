@@ -21,7 +21,7 @@ A comprehensive monitoring tool for real estate listings in the Trójmiasto area
 │   │   └── requirements.txt
 │   └── frontend
 │       ├── app.py                              # Dash application
-│       ├── app_scheduler.py                    # Scheduler for map generation and loading 
+│       ├── app_scheduler.py                    # Scheduler for map frontend logic 
 │       ├── assets                              # CSS files
 │       │   └── style.css
 │       ├── Dockerfile                          # Dash application
@@ -44,13 +44,13 @@ A comprehensive monitoring tool for real estate listings in the Trójmiasto area
     │   ├── middlewares.py
     │   ├── pipelines.py
     │   ├── settings.py                         # Scraper configuration
-    │   ├── shapefiles                          # Shapefiles needed for geodistance.py
+    │   ├── shapefiles                          # Shapefiles needed for geodistance.y
     │   │   ├── Europe_coastline_shapefile
     │   │   └── ne_110m_admin_0_countries
     │   └── spiders
     │       └── ogloszenia.py                   # Main spider
     ├── requirements.txt
-    ├── scraper_scheduler.py                    # Scheduler for scraper execution
+    ├── scraper_scheduler.py                    # Scheduler for scrapy execution 
     └── scrapy.cfg
 
 
@@ -105,7 +105,7 @@ docker compose up --build
 
 ### Database security
 Role-based access control:
-* scraper user: SELECT, INSERT, UPDATE permissions only
+* scraper user: SELECT, INSERT, UPDATE permissions
 * backend user: SELECT permissions only
 * no direct database exposure to host
 
@@ -124,7 +124,6 @@ To enable API access and its Swagger/OpenAPI documentation (`http://127.0.0.1:80
 * add port mapping in `docker-compose.yml`: 
 ```
 backend:
-  build: .app/backend
   ports: # change `expose` to `ports`
     - "127.0.0.1:8000:8000" # makes api accessible from the host
 ```
@@ -240,7 +239,7 @@ tail -f ./scraper/logs/spider_<TIMESTAMP>.log
 ### Database maintenance
 For development access:
 ```
-# connect to database container
+# enter mysql client inside the container
 docker exec -it <container_name> mysql -u root -p
 ```
 
@@ -265,6 +264,7 @@ docker system prune
 * **Data enrichment**: additional data sources
 * **Backups**: automated database backups
 * **Visualizations**: more advanced analytics and visualizations
+
 
 ## Sources
 * https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
