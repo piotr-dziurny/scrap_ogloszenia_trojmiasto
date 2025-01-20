@@ -4,43 +4,25 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import plotly.express as px
 import pandas as pd
+from flask import Response
 from dash.dash_table.Format import Format
+from map_utils import get_latest_map_path
+import time
 
 app = Dash(__name__)
 
-LATEST_MAP_FILE = "" # variable to store the path of the latest map file
-
-def get_latest_map_path():
-    """get the path of the latest HTML map file"""
-    global LATEST_MAP_FILE
-    try:
-        with open("static/latest_map.txt", "r") as f:
-            latest_map_path = f.read().strip()
-            if latest_map_path != LATEST_MAP_FILE:
-                LATEST_MAP_FILE = latest_map_path
-                return latest_map_path
-            return LATEST_MAP_FILE
-    except Exception:
-        return "static/default_map.html"
+@app.server.route("/status")
+def status_check():
+    return Response(status=200)
 
 map_path = get_latest_map_path()
 
-base_url = "http://127.0.0.1:8000"
+base_url = "http://backend:8000"
 
-# fetch top expensive properties from backend
-top_expensive_response = requests.get(f"{base_url}/listings/top-expensive")
-top_expensive = pd.DataFrame(top_expensive_response.json())
+while len(requests.get(f"{base_url}/listings").json()) < 5:
+    time.sleep(5)
 
-# fetch top affordable properties from backend
-top_affordable_response = requests.get(f"{base_url}/listings/top-affordable") 
-top_affordable = pd.DataFrame(top_affordable_response.json())
-
-# creating hyperlinks in markdown (dash doesn't support html) 
-top_expensive["url"] = top_expensive["url"].apply(lambda x: f"[Click](<{x}>)")
-top_affordable["url"] = top_affordable["url"].apply(lambda x: f"[Click](<{x}>)")
-
-# fetch unique cities for filtering
-cities_data = requests.get(f"{base_url}/listings/cities").json()
+cities_data = []  # empty list before first data update
 
 app.layout = html.Div([
     html.H1("Trójmiasto listings"),
@@ -55,10 +37,10 @@ app.layout = html.Div([
         )
     ], className="mb-4"),
 
-    # add interval to trigger updates of embedded html map
+    # interval component to trigger updates of embedded html map
     dcc.Interval(
         id="map-update",
-        interval=60 * 60 * 1000 * 24, # every 24 hours (n_intervals +=1)
+        interval=60 * 1000 * 60, # check for new map every hour (n_intervals +=1)
         n_intervals=0 # number of times the interval has passed
     ),
 
@@ -91,7 +73,8 @@ app.layout = html.Div([
             html.Div(style={"flex": "1"}, children=[
                 html.H2("Most expensive properties"),
                 dash_table.DataTable(
-                    data=top_expensive.to_dict("records"),
+                    id="top-expensive-table",
+                    data=[],
                     columns=[
                         {"name": "City", "id": "city"},
                         {"name": "Price (PLN)", "id": "price", "type": "numeric", "format": Format(group=True)},
@@ -110,7 +93,8 @@ app.layout = html.Div([
             html.Div(style={"flex": "1"}, children=[
                 html.H2("Most affordable properties"),
                 dash_table.DataTable(
-                    data=top_affordable.to_dict("records"),
+                    id="top-affordable-table",
+                    data=[],
                     columns=[
                         {"name": "City", "id": "city"},
                         {"name": "Price (PLN)", "id": "price", "type": "numeric", "format": Format(group=True)},
@@ -125,6 +109,12 @@ app.layout = html.Div([
                 )
             ]),
         ]
+    ),
+    # interval component for tables updates 
+    dcc.Interval(
+        id="table-update",
+        interval=60*1000,  # update every minute 
+        n_intervals=0
     )
 ], style={"margin-left": "240px", "margin-right": "240px"})
 
@@ -151,16 +141,16 @@ def update_graphs(selected_cities):
         empty_fig = {} 
         return empty_fig, empty_fig, empty_fig, empty_fig
 
-    base_url = "http://127.0.0.1:8000/listings/by-cities"
+    by_cities = f"{base_url}/listings/by-cities"
     city_params = "&".join([f"city={city}" for city in selected_cities])
-    query_url = f"{base_url}?{city_params}"
+    query_url = f"{by_cities}?{city_params}"
 
     # fetch data from API
     response = requests.get(query_url)
     if response.status_code != 200:
         raise ValueError("Failed to fetch data from the API")
 
-    data = pd.DataFrame(response.json())  # Assuming API returns JSON data
+    data = pd.DataFrame(response.json()) 
 
     # hist 1: Price < 3M
     filtered_price_1 = data[data["price"] < 3_000_000]
@@ -245,5 +235,38 @@ def update_graphs(selected_cities):
 
     return price_hist_1, price_hist_2, room_count_bar, city_bar
 
-if __name__ == "__main__":
-    app.run()#debug=True)
+# callback to update city dropdown
+@app.callback(
+    Output("city-dropdown", "options"),
+    [Input("table-update", "n_intervals")]
+)
+def update_city_dropdown(n):
+    # fetch unique cities for filtering
+    unique_cities = requests.get(f"{base_url}/listings/cities").json()
+    return [{"label": str(city), "value": str(city)} for city in unique_cities]
+
+# callback to update tables and city dropdown
+@app.callback(
+    [
+        Output("top-expensive-table", "data"),
+        Output("top-affordable-table", "data")
+    ],
+    [Input("table-update", "n_intervals")]
+)
+def update_tables(n):
+    # fetch top expensive properties from backend
+    top_expensive_response = requests.get(f"{base_url}/listings/top-expensive")
+    top_expensive = pd.DataFrame(top_expensive_response.json())
+    # creating hyperlinks in markdown (dash doesn't support html hyperlinks) 
+    top_expensive["url"] = top_expensive["url"].apply(lambda x: f"[Click](<{x}>)")
+
+    # fetch top affordable properties from backend
+    top_affordable_response = requests.get(f"{base_url}/listings/top-affordable") 
+    top_affordable = pd.DataFrame(top_affordable_response.json())
+    # creating hyperlinks in markdown (dash doesn't support html hyperlinks) 
+    top_affordable["url"] = top_affordable["url"].apply(lambda x: f"[Click](<{x}>)")
+
+    return (
+        top_expensive.to_dict("records"), 
+        top_affordable.to_dict("records")
+    )

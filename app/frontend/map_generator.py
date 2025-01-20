@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 
-def generate_map():
-    base_url = "http://127.0.0.1:8000"
-    map_data_response = requests.get(f"{base_url}/listings/map")
-    map_data = map_data_response.json()
+def main():
+    base_url = "http://backend:8000"
+    response = requests.get(f"{base_url}/listings/map")
+    map_data = response.json()
 
     # create map
     m = folium.Map(location=[
@@ -43,9 +43,6 @@ def generate_map():
 
     plugins.MiniMap().add_to(m)
     
-    # create dir if it doesn't exist
-    os.makedirs("static", exist_ok=True)
-    
     # save map with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     map_path = f"static/map_{timestamp}.html"
@@ -56,4 +53,4 @@ def generate_map():
         f.write(map_path)
 
 if __name__ == "__main__":
-    generate_map()
+    main()

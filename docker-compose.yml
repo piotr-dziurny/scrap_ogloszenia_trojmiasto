@@ -1,0 +1,107 @@
+services:
+  frontend:
+    build: ./app/frontend
+    ports:
+      - "127.0.0.1:8050:8050"
+    networks:
+      - frontend-network
+      - backend-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    cap_drop:
+      - ALL # drop linux capabilities
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  backend:
+    build: ./app/backend
+    expose:
+      - "8000"
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DB_HOST=database
+      - DB_PORT=3306
+      - DB_NAME=ogloszenia_trojmiasto
+      - DB_USER=backend
+      - DB_PASSWORD=${BACKEND_PASSWORD}
+    depends_on:
+      database:
+        condition: service_healthy
+    cap_drop:
+      - ALL # drop all linux capabilities
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  database:
+    build: ./db
+    expose:
+      - "3306"
+    networks:
+      - database-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=ogloszenia_trojmiasto
+      - SCRAPER_PASSWORD=${SCRAPER_PASSWORD}
+      - BACKEND_PASSWORD=${BACKEND_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-h", "localhost", "-e", "SELECT 1;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  scraper:
+    build: ./scraper
+    networks:
+      - database-network
+      - internet-network
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - DB_HOST=database
+      - DB_PORT=3306
+      - DB_NAME=ogloszenia_trojmiasto
+      - DB_USER=scraper
+      - DB_PASSWORD=${SCRAPER_PASSWORD}
+    volumes:
+      - ./scraper/logs:/scraper/logs # bind mount for log access
+    cap_drop:
+      - ALL # drop linux capabilities
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f '/scraper/run_spider.py' > /dev/null || exit 1"] # looking for running process
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  frontend-network:
+    internal: false
+  backend-network:
+    internal: true
+  database-network:
+    internal: true
+  internet-network:
+    internal: false
+
+volumes:
+  mysql_data:

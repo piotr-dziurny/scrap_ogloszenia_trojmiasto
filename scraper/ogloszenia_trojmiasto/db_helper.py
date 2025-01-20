@@ -9,17 +9,24 @@ class DatabaseHelper:
         """
         init db connection
         """
+        try:
+            self.conn = mysql.connector.connect(
+                host=os.getenv("DB_HOST"),
+                port=os.getenv("DB_PORT"),
+                user=os.getenv("DB_USER"),
+                password=os.getenv("DB_PASSWORD"),
+                database=os.getenv("DB_NAME"),
+                auth_plugin="caching_sha2_password"
+            )
+            
+            print("sucessfully connected to database")
 
-        self.conn = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            port=os.getenv("DB_PORT"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
+            self.cursor = self.conn.cursor()
+            # self.create_table()
 
-        self.cursor = self.conn.cursor()
-        self.create_table()
+        except mysql.connector.Error as error:
+            print(f"Error: {error}")
+            raise
 
     def create_table(self):
         create_table_sql = """

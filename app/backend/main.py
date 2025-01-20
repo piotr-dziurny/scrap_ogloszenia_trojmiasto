@@ -1,8 +1,17 @@
-from fastapi import FastAPI, Depends, Query
+from fastapi import FastAPI, Depends, Query, HTTPException
+from fastapi.responses import Response
 from sqlalchemy import desc, text
 from database import get_db
 
 app = FastAPI()
+
+@app.get("/status", description="Check API status")
+def status_check(db=Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return Response(status_code=200) 
+    except Exception:
+        raise HTTPException(status_code=500)
 
 @app.get("/listings", description="Fetch all listings from the database")
 def get_listings(db=Depends(get_db)):
