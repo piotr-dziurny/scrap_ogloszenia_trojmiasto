@@ -22,4 +22,4 @@ USER appuser
 # idk matplotlib needs this:
 ENV MPLCONFIGDIR=/tmp/matplotlib
 
-CMD ["sh", "-c", "python3 init_map.py && python3 app_scheduler.py"]
+CMD ["sh", "-c", "python3 main.py"]

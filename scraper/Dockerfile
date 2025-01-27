@@ -2,6 +2,7 @@ FROM python:3.12.8-slim
 
 RUN apt-get update && \
     apt-get upgrade -y && \
+    apt-get install -y procps && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -17,4 +18,4 @@ RUN useradd appuser && \
    
 USER appuser
 
-CMD ["sh", "-c", "python3 scraper_scheduler.py"]
+CMD ["sh", "-c", "python3 main.py"]

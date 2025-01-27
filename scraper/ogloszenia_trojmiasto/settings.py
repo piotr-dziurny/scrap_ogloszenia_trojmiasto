@@ -97,9 +97,11 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8-sig"
 
-os.makedirs("logs", exist_ok=True)
+LOG_DIR = "/scraper/logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-LOG_FILE = os.path.join("logs", f"spider_{timestamp}.log")
+LOG_FILE = os.path.join(LOG_DIR, f"spider_{timestamp}.log")
 LOG_LEVEL = "INFO"
 LOG_STDOUT = True
 LOG_ENABLED = True

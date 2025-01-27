@@ -1,0 +1,13 @@
+results.csv
+test.ipynb
+todo.md
+venv/
+.env
+logs/*
+geodistance.bak
+debug/
+result_0101.csv
+result_0501.csv
+tree.md
+.venv/
+TODO.md

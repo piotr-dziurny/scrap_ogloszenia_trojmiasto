@@ -9,6 +9,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    volumes:
+      - frontend_logs:/frontend/logs # absolute path
     cap_drop:
       - ALL # drop linux capabilities
     security_opt:
@@ -81,13 +83,13 @@ services:
       - DB_USER=scraper
       - DB_PASSWORD=${SCRAPER_PASSWORD}
     volumes:
-      - ./scraper/logs:/scraper/logs # bind mount for log access
+      - scraper_logs:/scraper/logs # absolute path 
     cap_drop:
       - ALL # drop linux capabilities
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f '/scraper/run_spider.py' > /dev/null || exit 1"] # looking for running process
+      test: ["CMD-SHELL", "pgrep -f '/scraper/main.py' > /dev/null || exit 1"] # looking for running process
       interval: 30s
       timeout: 10s
       retries: 3
@@ -104,4 +106,6 @@ networks:
     internal: false
 
 volumes:
+  frontend_logs:
   mysql_data:
+  scraper_logs:

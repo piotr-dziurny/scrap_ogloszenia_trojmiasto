@@ -21,11 +21,10 @@ A comprehensive monitoring tool for real estate listings in the Trójmiasto area
 │   │   └── requirements.txt
 │   └── frontend
 │       ├── app.py                              # Dash application
-│       ├── app_scheduler.py                    # Scheduler for map frontend logic 
 │       ├── assets                              # CSS files
 │       │   └── style.css
 │       ├── Dockerfile                          # Dash application
-│       ├── init_map.py                         # Initial map setup
+│       ├── main.py                             # Main program 
 │       ├── map_generator.py                    # Map generation script
 │       ├── map_utils.py                        # Map loading utilities
 │       └── requirements.txt
@@ -37,6 +36,7 @@ A comprehensive monitoring tool for real estate listings in the Trójmiasto area
 ├── README.md
 └── scraper
     ├── Dockerfile
+    ├── main.py                                 # Main program for scraper execution 
     ├── ogloszenia_trojmiasto
     │   ├── db_helper.py                        # Database interaction utilities
     │   ├── geodistance.py                      # Module for geographical data extraction for scraped items
@@ -50,7 +50,6 @@ A comprehensive monitoring tool for real estate listings in the Trójmiasto area
     │   └── spiders
     │       └── ogloszenia.py                   # Main spider
     ├── requirements.txt
-    ├── scraper_scheduler.py                    # Scheduler for scrapy execution 
     └── scrapy.cfg
 
 
@@ -231,10 +230,8 @@ Additional processing details:
 ```
 # view service logs
 docker compose logs -f [service_name]
-
-# monitor spider logs
-tail -f ./scraper/logs/spider_<TIMESTAMP>.log
 ```
+Scraper and frontend logs are saved in a Docker volume. To access them simply create a symbolic link to the Docker volume.
 
 ### Database maintenance
 For development access:
@@ -264,7 +261,6 @@ docker system prune
 * **Data enrichment**: additional data sources
 * **Backups**: automated database backups
 * **Visualizations**: more advanced analytics and visualizations
-
 
 ## Sources
 * https://www.naturalearthdata.com/downloads/110m-cultural-vectors/

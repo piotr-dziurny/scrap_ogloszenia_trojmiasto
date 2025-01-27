@@ -6,7 +6,23 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 
-def main():
+def create_default_map():
+    """
+    create a default map with no data
+    """
+    os.makedirs("static", exist_ok=True)
+    m = folium.Map(location=[0, 0], zoom_start=2)
+    default_path = "static/default_map.html"
+    m.save(default_path)
+    with open("static/latest_map.txt", "w") as f:
+        f.write(default_path)
+
+    return default_path
+
+def create_new_map():
+    """
+    create a new map with data from the backend
+    """
     base_url = "http://backend:8000"
     response = requests.get(f"{base_url}/listings/map")
     map_data = response.json()
@@ -51,6 +67,3 @@ def main():
     # save latest map reference
     with open("static/latest_map.txt", "w") as f:
         f.write(map_path)
-
-if __name__ == "__main__":
-    main()
