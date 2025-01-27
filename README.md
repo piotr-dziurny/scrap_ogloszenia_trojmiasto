@@ -67,16 +67,19 @@ A comprehensive monitoring tool for real estate listings in the Trójmiasto area
 git clone <repo-url>
 cd <project-directory>
 ```
+2. Create log directories:
 
-2. Configure environment:
-
-copy example env file
 ```
+mkdir -p scraper/logs
+mkdir -p app/frontend/logs
+```
+
+3. Configure environment:
+
+```
+# copy example env file
 cp .env.example .env
-```
-
-edit default passwords
-```
+# edit default passwords
 nvim .env
 ```
 
@@ -86,7 +89,7 @@ MYSQL_ROOT_PASSWORD=root_password
 BACKEND_PASSWORD=backend_password
 SCRAPER_PASSWORD=scraper_password
 ```
-3. Build and start the services: 
+4. Build and start the services: 
 ```
 docker compose up --build
 ```
@@ -231,7 +234,7 @@ Additional processing details:
 # view service logs
 docker compose logs -f [service_name]
 ```
-Scraper and frontend logs are saved in a Docker volume. To access them simply create a symbolic link to the Docker volume.
+Scraper and frontend logs are saved in Docker volumes. To access them simply create symbolic links to Docker volumes.
 
 ### Database maintenance
 For development access:
@@ -261,6 +264,7 @@ docker system prune
 * **Data enrichment**: additional data sources
 * **Backups**: automated database backups
 * **Visualizations**: more advanced analytics and visualizations
+* **Permissions**: switch from Docker volumes to bind mounts for logging to improve accessibility while maintaining container security best practices
 
 ## Sources
 * https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
